@@ -16,6 +16,9 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
+      - name: Set up Git
+        uses: actions/setup-git@v1
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
@@ -23,15 +26,15 @@ jobs:
           build-tools: 31.0.0
           ndk-version: 21.1.6352462
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git wget unzip
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
 
       - name: Install Python dependencies
         run: |
