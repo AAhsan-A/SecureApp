@@ -25,14 +25,22 @@ jobs:
 
       - name: Set up Android SDK
         run: |
-          mkdir -p $ANDROID_SDK_ROOT
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
           cd $ANDROID_SDK_ROOT
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip -d cmdline-tools
-          mkdir -p cmdline-tools/latest && mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
+          mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
           yes | cmdline-tools/latest/bin/sdkmanager --licenses
           yes | cmdline-tools/latest/bin/sdkmanager --update
           yes | cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;30.0.3" "ndk;21.1.6352462"
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+
+      - name: Accept SDK licenses
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\n858bd2e344f85a4d639a7108a0458c3beefdd201" >> $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
         env:
           ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
 
