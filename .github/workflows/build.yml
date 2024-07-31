@@ -27,7 +27,7 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --update
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;30.0.3" "ndk;21.1.6352462"
         env:
-          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: $HOME/android-sdk
 
       - name: Accept SDK Licenses
         run: |
@@ -35,21 +35,21 @@ jobs:
           echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" >> $ANDROID_HOME/licenses/android-sdk-license
           echo -e "\n858bd2e344f85a4d639a7108a0458c3beefdd201" >> $ANDROID_HOME/licenses/android-sdk-preview-license
         env:
-          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: $HOME/android-sdk
 
       - name: Ensure build-tools and aidl are installed
         run: |
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --list
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
-          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
-          if [ ! -f "${ANDROID_HOME}/build-tools/30.0.3/aidl" ]; then
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
+          if [ ! -f "$ANDROID_HOME/build-tools/30.0.3/aidl" ]; then
             echo "aidl not found in build-tools;30.0.3, trying build-tools;31.0.0"
-            yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
           fi
-          ls ${ANDROID_HOME}/build-tools/30.0.3/
+          ls $ANDROID_HOME/build-tools/30.0.3/
         env:
-          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: $HOME/android-sdk
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -63,13 +63,13 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          export PATH=${ANDROID_HOME}/build-tools/30.0.3:${PATH}
+          export PATH=$ANDROID_HOME/build-tools/30.0.3:$PATH
           buildozer android debug
         env:
-          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
-          ANDROID_NDK_HOME: ${{ runner.tool_cache }}/android-sdk/ndk/21.1.6352462
+          ANDROID_HOME: $HOME/android-sdk
+          ANDROID_NDK_HOME: $HOME/android-sdk/ndk/21.1.6352462
           GIT: /usr/bin/git
-          PATH: /usr/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/build-tools/30.0.3:${ANDROID_HOME}/build-tools/31.0.0:$PATH
+          PATH: /usr/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/build-tools/30.0.3:$ANDROID_HOME/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
