@@ -3,7 +3,6 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  # Build job. Builds app for Android with Buildozer
   build-android:
     name: Build for Android
     runs-on: ubuntu-latest
@@ -12,32 +11,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
       - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 31
+          build-tools: 31.0.0
+          ndk-version: 21.1.6352462
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies
         run: |
-          apt-get update
-          apt-get install -y wget unzip openjdk-11-jdk
-          mkdir -p "$ANDROID_HOME/cmdline-tools"
-          cd "$ANDROID_HOME/cmdline-tools"
-          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mv cmdline-tools/* .
-          rm cmdline-tools.zip
-          yes | ./bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          yes | ./bin/sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-31" "build-tools;31.0.0" "ndk;21.1.6352462" "platform-tools"
-        env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/platform-tools:$PATH
+          pip install --upgrade pip
+          pip install cython kivy buildozer
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
-          command: buildozer android debug
+          command: android debug
           buildozer_version: stable
         env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          ANDROID_NDK_HOME: ${{ github.workspace }}/android-sdk/ndk/21.1.6352462
-          PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/31.0.0:$PATH
+          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_NDK_HOME: ${{ runner.tool_cache }}/android-sdk/ndk/21.1.6352462
+          PATH: ${{ runner.tool_cache }}/android-sdk/platform-tools:${{ runner.tool_cache }}/android-sdk/cmdline-tools/bin:${{ runner.tool_cache }}/android-sdk/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
