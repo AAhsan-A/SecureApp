@@ -1,4 +1,5 @@
-name: Build Kivy App
+# From https://github.com/marketplace/actions/buildozer-action
+name: Build
 
 on: [push, pull_request]
 
@@ -47,5 +48,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: apk
-          path: bin/*.apk
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
