@@ -1,9 +1,11 @@
-# From https://github.com/marketplace/actions/buildozer-action
-name: Build
-on: [push, pull_request]
+name: Build Kivy App
+
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-  # Build job. Builds app for Android with Buildozer
   build-android:
     name: Build for Android
     runs-on: ubuntu-latest
@@ -12,15 +14,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libffi-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget unzip git
+          pip install --upgrade pip
+          pip install cython kivy
+          wget https://bootstrap.pypa.io/get-pip.py
+          sudo python3 get-pip.py
+
+      - name: Set up Android SDK
+        run: |
+          mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
+          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
+          unzip -o cmdline-tools.zip -d cmdline-tools-temp
+          mkdir -p cmdline-tools
+          mv cmdline-tools-temp/cmdline-tools/* cmdline-tools/
+          rm -rf cmdline-tools-temp cmdline-tools.zip
+          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
-          command: buildozer android debug
+          command: android debug
           buildozer_version: stable
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
 
-      - name: Upload artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v2
         with:
-          name: package
+          name: apk
           path: ${{ steps.buildozer.outputs.filename }}
