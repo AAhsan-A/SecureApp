@@ -17,19 +17,11 @@ jobs:
           java-version: '11'
 
       - name: Set up Android SDK
-        run: |
-          mkdir -p $HOME/.android
-          touch $HOME/.android/repositories.cfg
-          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O commandlinetools.zip
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          unzip -q commandlinetools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --update
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;21.1.6352462"
-        env:
-          ANDROID_SDK_ROOT: $HOME/android-sdk
-          PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$PATH
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 31
+          build-tools: 31.0.0
+          ndk-version: 21.1.6352462
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -45,9 +37,9 @@ jobs:
         run: |
           buildozer android debug
         env:
-          ANDROID_SDK_ROOT: $HOME/android-sdk
-          ANDROID_NDK_HOME: $HOME/android-sdk/ndk/21.1.6352462
-          PATH: $HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/build-tools/31.0.0:$PATH
+          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_NDK_HOME: ${{ runner.tool_cache }}/android-sdk/ndk/21.1.6352462
+          PATH: ${{ runner.tool_cache }}/android-sdk/platform-tools:${{ runner.tool_cache }}/android-sdk/cmdline-tools/latest/bin:${{ runner.tool_cache }}/android-sdk/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
