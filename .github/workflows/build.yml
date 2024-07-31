@@ -25,7 +25,8 @@ jobs:
 
       - name: Set up Android SDK
         run: |
-          mkdir -p "$ANDROID_SDK_ROOT" && cd "$ANDROID_SDK_ROOT"
+          mkdir -p $ANDROID_SDK_ROOT
+          cd $ANDROID_SDK_ROOT
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip -d cmdline-tools
           mkdir -p cmdline-tools/latest && mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
