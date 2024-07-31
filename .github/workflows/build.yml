@@ -12,10 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set up Android SDK and dependencies
+      - name: Set up dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip
+          apt-get update
+          apt-get install -y openjdk-11-jdk wget unzip
           mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
           unzip -o cmdline-tools.zip -d cmdline-tools
