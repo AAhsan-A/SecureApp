@@ -13,11 +13,11 @@ jobs:
 
       - name: Set up Docker container
         run: |
-          docker run --name buildozer-container -d -v ${{ github.workspace }}:/workspace -w /workspace python:3.9-slim tail -f /dev/null
+          docker run --name buildozer-container -d -v ${{ github.workspace }}:/workspace -w /workspace openjdk:11-jdk-slim tail -f /dev/null
 
       - name: Install dependencies
         run: |
-          docker exec buildozer-container sh -c "apt-get update && apt-get install -y openjdk-11-jdk wget unzip"
+          docker exec buildozer-container sh -c "apt-get update && apt-get install -y wget unzip"
           docker exec buildozer-container sh -c "mkdir -p /root/.android && touch /root/.android/repositories.cfg"
           docker exec buildozer-container sh -c "wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O commandlinetools.zip"
           docker exec buildozer-container sh -c "unzip commandlinetools.zip -d /usr/local/android-sdk/cmdline-tools"
@@ -28,10 +28,11 @@ jobs:
         env:
           ANDROID_SDK_ROOT: /usr/local/android-sdk
 
-      - name: Install Python dependencies
+      - name: Set up Python
         run: |
-          docker exec buildozer-container sh -c "pip install --upgrade pip"
-          docker exec buildozer-container sh -c "pip install cython kivy buildozer"
+          docker exec buildozer-container sh -c "apt-get install -y python3 python3-pip"
+          docker exec buildozer-container sh -c "pip3 install --upgrade pip"
+          docker exec buildozer-container sh -c "pip3 install cython kivy buildozer"
 
       - name: Build with Buildozer
         run: |
