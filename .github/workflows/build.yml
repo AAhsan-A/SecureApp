@@ -14,16 +14,17 @@ jobs:
 
       - name: Set up dependencies
         run: |
-          apt-get update
-          apt-get install -y openjdk-11-jdk wget unzip
+          apt-get update && apt-get install -y wget unzip openjdk-11-jdk
           mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
-          unzip -o cmdline-tools.zip -d cmdline-tools
-          yes | cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-          yes | cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
+          unzip cmdline-tools.zip
+          mkdir -p cmdline-tools
+          mv cmdline-tools/* cmdline-tools/
+          rm cmdline-tools.zip
+          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:$PATH
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -43,7 +44,7 @@ jobs:
           buildozer_version: stable
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
+          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
