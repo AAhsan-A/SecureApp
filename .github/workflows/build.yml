@@ -47,15 +47,8 @@ jobs:
 
       - name: Ensure build-tools and aidl are installed
         run: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
-          if [ ! -f "$ANDROID_HOME/build-tools/30.0.3/aidl" ]; then
-            echo "aidl not found in build-tools;30.0.3, trying build-tools;31.0.0"
-            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
-          fi
-          ls $ANDROID_HOME/build-tools/30.0.3/
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;30.0.3" "ndk;21.1.6352462"
         env:
           ANDROID_HOME: $HOME/android-sdk
 
@@ -65,6 +58,9 @@ jobs:
         with:
           command: buildozer android debug
           buildozer_version: stable
+        env:
+          ANDROID_HOME: $HOME/android-sdk
+          PATH: $ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/30.0.3:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
