@@ -1,9 +1,6 @@
 name: Build Kivy App
 
-on:
-  push:
-    branches:
-      - master
+on: [push, pull_request]
 
 jobs:
   build-android:
@@ -14,47 +11,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set up Android SDK and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk wget unzip
+          mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
+          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
+          unzip -o cmdline-tools.zip -d cmdline-tools
+          yes | cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+          yes | cmdline-tools/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:$PATH
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libssl-dev libffi-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget unzip git
           pip install --upgrade pip
           pip install cython kivy buildozer
 
-      - name: Set up Android SDK
-        run: |
-          mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
-          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
-          unzip -o cmdline-tools.zip -d cmdline-tools-temp
-          mkdir -p cmdline-tools
-          mv cmdline-tools-temp/cmdline-tools/* cmdline-tools/
-          rm -rf cmdline-tools-temp cmdline-tools.zip
-          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
-        env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-
-      - name: Prepare build environment
-        run: |
-          export ANDROID_HOME=${{ github.workspace }}/android-sdk
-          export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/build-tools/28.0.3:$PATH
-          buildozer init
-
-      - name: Build the APK
-        run: |
-          export ANDROID_HOME=${{ github.workspace }}/android-sdk
-          export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/build-tools/28.0.3:$PATH
-          buildozer -v android debug
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: android debug
+          buildozer_version: stable
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
           PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
 
-      - name: Upload APK
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: apk
