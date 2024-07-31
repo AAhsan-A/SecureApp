@@ -18,15 +18,15 @@ jobs:
       - name: Install dependencies
         run: |
           docker exec buildozer-container sh -c "apt-get update && apt-get install -y wget unzip"
-          docker exec buildozer-container sh -c "mkdir -p /root/.android && touch /root/.android/repositories.cfg"
+          docker exec buildozer-container sh -c "mkdir -p /home/user/android-sdk/cmdline-tools"
           docker exec buildozer-container sh -c "wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O commandlinetools.zip"
-          docker exec buildozer-container sh -c "unzip commandlinetools.zip -d /usr/local/android-sdk/cmdline-tools"
-          docker exec buildozer-container sh -c "mv /usr/local/android-sdk/cmdline-tools/cmdline-tools /usr/local/android-sdk/cmdline-tools/latest"
-          docker exec buildozer-container sh -c "yes | /usr/local/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses"
-          docker exec buildozer-container sh -c "yes | /usr/local/android-sdk/cmdline-tools/latest/bin/sdkmanager --update"
-          docker exec buildozer-container sh -c "/usr/local/android-sdk/cmdline-tools/latest/bin/sdkmanager 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'ndk;21.1.6352462'"
+          docker exec buildozer-container sh -c "unzip commandlinetools.zip -d /home/user/android-sdk/cmdline-tools"
+          docker exec buildozer-container sh -c "mv /home/user/android-sdk/cmdline-tools/cmdline-tools /home/user/android-sdk/cmdline-tools/latest"
+          docker exec buildozer-container sh -c "yes | /home/user/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses"
+          docker exec buildozer-container sh -c "yes | /home/user/android-sdk/cmdline-tools/latest/bin/sdkmanager --update"
+          docker exec buildozer-container sh -c "/home/user/android-sdk/cmdline-tools/latest/bin/sdkmanager 'platform-tools' 'platforms;android-31' 'build-tools;31.0.0' 'ndk;21.1.6352462'"
         env:
-          ANDROID_SDK_ROOT: /usr/local/android-sdk
+          ANDROID_SDK_ROOT: /home/user/android-sdk
 
       - name: Set up Python
         run: |
@@ -38,9 +38,9 @@ jobs:
         run: |
           docker exec buildozer-container sh -c "buildozer android debug"
         env:
-          ANDROID_SDK_ROOT: /usr/local/android-sdk
-          ANDROID_NDK_HOME: /usr/local/android-sdk/ndk/21.1.6352462
-          PATH: /usr/local/android-sdk/platform-tools:/usr/local/android-sdk/cmdline-tools/latest/bin:/usr/local/android-sdk/build-tools/31.0.0:$PATH
+          ANDROID_SDK_ROOT: /home/user/android-sdk
+          ANDROID_NDK_HOME: /home/user/android-sdk/ndk/21.1.6352462
+          PATH: /home/user/android-sdk/platform-tools:/home/user/android-sdk/cmdline-tools/latest/bin:/home/user/android-sdk/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
