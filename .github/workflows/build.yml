@@ -1,9 +1,9 @@
 # From https://github.com/marketplace/actions/buildozer-action
 name: Build
-
 on: [push, pull_request]
 
 jobs:
+  # Build job. Builds app for Android with Buildozer
   build-android:
     name: Build for Android
     runs-on: ubuntu-latest
@@ -12,41 +12,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set up dependencies
+      - name: Set up Android SDK
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip
+          sudo apt-get install -y wget unzip openjdk-11-jdk
           mkdir -p "$ANDROID_HOME/cmdline-tools"
           cd "$ANDROID_HOME/cmdline-tools"
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip
-          mv cmdline-tools/* ./
-          rmdir cmdline-tools
+          mv cmdline-tools/* .
           rm cmdline-tools.zip
           yes | ./bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          yes | ./bin/sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-28" "build-tools;28.0.3" "platform-tools"
+          yes | ./bin/sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-31" "build-tools;31.0.0" "ndk;21.1.6352462" "platform-tools"
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:$PATH
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Install Python dependencies
-        run: |
-          pip install --upgrade pip
-          pip install cython kivy buildozer
+          PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/platform-tools:$PATH
 
       - name: Build with Buildozer
-        run: buildozer android debug
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: stable
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
+          ANDROID_NDK_HOME: ${{ github.workspace }}/android-sdk/ndk/21.1.6352462
+          PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: package
-          path: bin/*.apk
+          path: ${{ steps.buildozer.outputs.filename }}
