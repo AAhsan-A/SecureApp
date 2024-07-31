@@ -10,53 +10,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Git and dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git wget unzip
-          git --version
-          which git
-
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          java-version: '11'
+          sudo apt-get install -y git wget unzip openjdk-11-jdk
 
       - name: Set up Android SDK
         run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
-          cd $ANDROID_SDK_ROOT
+          export ANDROID_HOME=$HOME/android-sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d cmdline-tools
-          mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
-          yes | cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | cmdline-tools/latest/bin/sdkmanager --update
-          yes | cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;30.0.3" "ndk;21.1.6352462"
+          unzip cmdline-tools.zip
+          mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --update
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-31" "build-tools;30.0.3" "ndk;21.1.6352462"
         env:
-          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
 
-      - name: Accept SDK licenses
+      - name: Accept SDK Licenses
         run: |
-          mkdir -p $ANDROID_SDK_ROOT/licenses
-          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          echo -e "\n858bd2e344f85a4d639a7108a0458c3beefdd201" >> $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
+          mkdir -p $ANDROID_HOME/licenses
+          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" >> $ANDROID_HOME/licenses/android-sdk-license
+          echo -e "\n858bd2e344f85a4d639a7108a0458c3beefdd201" >> $ANDROID_HOME/licenses/android-sdk-preview-license
         env:
-          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
 
       - name: Ensure build-tools and aidl are installed
         run: |
-          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
-          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --list
-          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
-          yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
-          if [ ! -f "${ANDROID_SDK_ROOT}/build-tools/30.0.3/aidl" ]; then
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --list
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
+          if [ ! -f "${ANDROID_HOME}/build-tools/30.0.3/aidl" ]; then
             echo "aidl not found in build-tools;30.0.3, trying build-tools;31.0.0"
-            yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
+            yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
           fi
-          ls ${ANDROID_SDK_ROOT}/build-tools/30.0.3/
+          ls ${ANDROID_HOME}/build-tools/30.0.3/
         env:
-          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -70,13 +63,13 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          export PATH=${{ runner.tool_cache }}/android-sdk/build-tools/30.0.3:${PATH}
+          export PATH=${ANDROID_HOME}/build-tools/30.0.3:${PATH}
           buildozer android debug
         env:
-          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+          ANDROID_HOME: ${{ runner.tool_cache }}/android-sdk
           ANDROID_NDK_HOME: ${{ runner.tool_cache }}/android-sdk/ndk/21.1.6352462
           GIT: /usr/bin/git
-          PATH: /usr/bin:${{ runner.tool_cache }}/android-sdk/platform-tools:${{ runner.tool_cache }}/android-sdk/cmdline-tools/latest/bin:${{ runner.tool_cache }}/android-sdk/build-tools/30.0.3:${{ runner.tool_cache }}/android-sdk/build-tools/31.0.0:$PATH
+          PATH: /usr/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/build-tools/30.0.3:${ANDROID_HOME}/build-tools/31.0.0:$PATH
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
