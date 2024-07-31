@@ -41,6 +41,7 @@ jobs:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
           PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
         run: |
+          sudo apt install git
           buildozer android debug
 
       - name: Upload APK
