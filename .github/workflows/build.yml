@@ -63,7 +63,7 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          export PATH=${{ runner.tool_cache }}/android-sdk/build-tools/30.0.3:${PATH}
+          export PATH=${{ runner.tool_cache }}/android-sdk/build-tools/30.0.3:${{ runner.tool_cache }}/android-sdk/build-tools/31.0.0:${PATH}
           buildozer android debug
         env:
           ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
