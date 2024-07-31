@@ -42,11 +42,9 @@ jobs:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
 
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: android debug
-          buildozer_version: stable
+        run: |
+          sudo chown -R $(whoami) .
+          buildozer android debug
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
           PATH: ${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/android-sdk/cmdline-tools/bin:${{ github.workspace }}/android-sdk/build-tools/28.0.3:$PATH
@@ -55,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
