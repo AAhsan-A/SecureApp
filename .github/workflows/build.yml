@@ -23,15 +23,15 @@ jobs:
           build-tools: 31.0.0
           ndk-version: 21.1.6352462
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget unzip
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-
-      - name: Install Git
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git
 
       - name: Install Python dependencies
         run: |
