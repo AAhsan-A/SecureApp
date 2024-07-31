@@ -26,12 +26,13 @@ jobs:
 
       - name: Set up Android SDK
         run: |
-          mkdir -p "$ANDROID_HOME" && cd "$ANDROID_HOME"
+          mkdir -p "$ANDROID_HOME/cmdline-tools" && cd "$ANDROID_HOME/cmdline-tools"
           wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mkdir -p cmdline-tools && mv cmdline-tools/* cmdline-tools/
-          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-          yes | cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
+          unzip -o cmdline-tools.zip -d cmdline-tools
+          mv cmdline-tools/* .
+          rm -rf cmdline-tools
+          yes | ./bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+          yes | ./bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-28" "build-tools;28.0.3" "platform-tools"
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
 
