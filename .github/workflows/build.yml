@@ -10,11 +10,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install dependencies
+      - name: Install Git and dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git wget unzip
           git --version
+          which git
           
       - name: Set up JDK
         uses: actions/setup-java@v2
@@ -41,6 +42,7 @@ jobs:
 
       - name: Build with Buildozer
         run: |
+          echo $PATH
           buildozer android debug
         env:
           ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
