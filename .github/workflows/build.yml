@@ -37,6 +37,14 @@ jobs:
         env:
           ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
 
+      - name: Verify Android SDK Installation
+        run: |
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --list
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --uninstall "build-tools;35.0.0"
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;28.0.3"
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
