@@ -31,9 +31,8 @@ jobs:
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
-           install aidl
         with:
-          command: buildozer android debug
+          command: buildozer android debug | install aidl
           buildozer_version: master
 
       - name: Upload artifacts
