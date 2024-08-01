@@ -29,6 +29,7 @@ jobs:
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
       - name: Build with Buildozer
+              install aidl
         uses: ArtemSBulgakov/buildozer-action@v1
         id: buildozer
         with:
