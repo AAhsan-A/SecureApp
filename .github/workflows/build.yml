@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -21,72 +21,19 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
 
       - uses: actions/cache@v2
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git wget unzip openjdk-11-jdk aidl
-
-      - name: Set up Android SDK
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip -O commandlinetools.zip
-          unzip commandlinetools.zip -d $ANDROID_HOME/cmdline-tools
-          mkdir -p $ANDROID_HOME/cmdline-tools/latest
-          mv $ANDROID_HOME/cmdline-tools/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --update
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;21.1.6352462"
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-
-      - name: Accept SDK Licenses
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          mkdir -p $ANDROID_HOME/licenses
-          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" >> $ANDROID_HOME/licenses/android-sdk-license
-          echo -e "\n858bd2e344f85a4d639a7108a0458c3beefdd201" >> $ANDROID_HOME/licenses/android-sdk-preview-license
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-
-      - name: Ensure build-tools and aidl are installed
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;31.0.0"
-          if [ ! -f "$ANDROID_HOME/build-tools/31.0.0/aidl" ]; then
-            echo "aidl not found in build-tools;31.0.0, exiting"
-            exit 1
-          fi
-          ls $ANDROID_HOME/build-tools/31.0.0/
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Install Python dependencies
-        run: |
-          pip install --upgrade pip
-          pip install cython kivy buildozer
-
       - name: Build with Buildozer
-        run: |
-          export PATH=$ANDROID_HOME/build-tools/31.0.0:$PATH
-          buildozer android debug
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-          ANDROID_NDK_HOME: $HOME/android-sdk/ndk/21.1.6352462
-          GIT: /usr/bin/git
-          PATH: /usr/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/build-tools/31.0.0:$PATH
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: master
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
